@@ -1,3 +1,7 @@
 src/
 package-lock.json
 tsconfig.json
+.github/
+assets/
+bun.lockb
+bun.lock

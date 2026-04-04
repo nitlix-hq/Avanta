@@ -1,9 +1,31 @@
 {
     "name": "avanta",
-    "version": "1.0.4",
-    "description": "🚅 The backbone for auth, simplifying the OAuth process for developers.",
+    "version": "2.0.0",
+    "author": "nitlix-hq",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/nitlix-hq/Avanta"
+    },
     "main": "./dist/exports.js",
-    "keywords": [],
-    "author": "NITLIX HOLDINGS LTD.",
-    "license": "MIT"
+    "module": "./dist/exports.js",
+    "devDependencies": {
+        "@types/bun": "^1.3.11"
+    },
+    "peerDependencies": {
+        "typescript": "^5.9.3"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/exports.d.ts",
+            "default": "./dist/exports.js"
+        }
+    },
+    "description": "🚅 OAuth that does more with less. Prebuilt providers, with high user accessilibity.",
+    "files": [
+        "dist"
+    ],
+    "homepage": "https://github.com/nitlix-hq/Avanta",
+    "license": "MIT",
+    "type": "module",
+    "types": "./dist/exports.d.ts"
 }
