@@ -9,12 +9,16 @@ export default class TokenStore {
         this.refresh_token = refresh_token ?? "";
     }
 
-    public get compress() {
+    public compress() {
         return JSON.stringify({
             access_token: this.access_token,
             refresh_token: this.refresh_token,
             access_token_expires_at: this.access_token_expires_at,
         });
+    }
+
+    public get compressed() {
+        return this.compress();
     }
 
     public static extract(compressed: string) {

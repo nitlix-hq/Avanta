@@ -107,7 +107,7 @@ const tokenStore = await discord.getTokenStore(code);
 The `TokenStore` holds the access token, refresh token, and expiry timestamp. You can serialize it to JSON for storage:
 
 ```ts
-const serialized = tokenStore.compress; // JSON string
+const serialized = tokenStore.compress(); // JSON string
 ```
 
 And restore it later:
@@ -272,7 +272,7 @@ tokenStore.refresh_token; // string
 tokenStore.access_token_expires_at; // number (ms since epoch)
 
 // Serialize to JSON string (for database storage, cookies, etc.)
-const json = tokenStore.compress;
+const json = tokenStore.compress();
 
 // Restore from JSON string
 const restored = TokenStore.extract(json);
@@ -286,7 +286,7 @@ const data = await discord.getData(tokenStore);
 // IMPORTANT: persist the (possibly refreshed) token store
 await db.user.update({
     where: { id: userId },
-    data: { tokens: data.tokenStore.compress },
+    data: { tokens: data.tokenStore.compress() },
 });
 ```
 
@@ -456,7 +456,8 @@ All providers accept the same options:
 | `access_token`             | `string`              | The current access token                        |
 | `refresh_token`            | `string`              | The refresh token (empty string if unavailable) |
 | `access_token_expires_at`  | `number`              | Expiry as ms since epoch                        |
-| `compress`                 | `string` (getter)     | JSON-serialized token data                      |
+| `compress()`               | `string`              | JSON-serialized token data                      |
+| `compressed`               | `string` (getter)     | Alias for `compress()`                          |
 | `TokenStore.extract(json)` | `TokenStore` (static) | Deserialize from JSON string                    |
 
 ## Contributor docs
