@@ -4,6 +4,14 @@ import GoogleProvider from "./providers/GoogleProvider";
 import MicrosoftProvider from "./providers/MicrosoftProvider";
 import TwitchProvider from "./providers/TwitchProvider";
 
+export {
+    DiscordProvider,
+    GitHubProvider,
+    GoogleProvider,
+    MicrosoftProvider,
+    TwitchProvider,
+};
+
 export default {
     DiscordProvider,
     GitHubProvider,
