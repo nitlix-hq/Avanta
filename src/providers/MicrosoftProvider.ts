@@ -92,8 +92,8 @@ interface ScopeDataMap {
 
 type UnionToIntersection<U> =
     (U extends any ? (k: U) => void : never) extends (k: infer I) => void
-        ? I
-        : never;
+    ? I
+    : never;
 
 type DataForScopes<S extends readonly Scope[]> = UnionToIntersection<
     ScopeDataMap[S[number] & keyof ScopeDataMap]
@@ -101,11 +101,43 @@ type DataForScopes<S extends readonly Scope[]> = UnionToIntersection<
     tokenStore: TokenStore;
 };
 
+type ActionMap = {
+    "User.Read": {
+        user: {
+            photo: {
+                /**
+                 * Fetches the current user's profile photo as raw bytes.
+                 * Endpoint: `GET /me/photo/$value`
+                 *
+                 * Returns `data: null` when the user has no photo (Graph returns 404).
+                 */
+                readRaw: ({
+                    tokenStore,
+                }: {
+                    tokenStore: TokenStore;
+                }) => Promise<{
+                    tokenStore: TokenStore;
+                    data: { contentType: string | null; bytes: Uint8Array } | null;
+                }>;
+            };
+        };
+    };
+};
+
+type ScopeToAction<U> = U extends keyof ActionMap ? ActionMap[U] : {};
+
+type ActionsForScopes<S extends readonly Scope[]> = UnionToIntersection<
+    ScopeToAction<S[number]>
+>;
+
 export default class MicrosoftProvider<const S extends readonly Scope[]> {
     private clientId: string;
     private clientSecret: string;
     private redirectUri: string;
     private scopes: S;
+
+    /** Scope-dependent actions (only methods for the requested scopes are present at the type level). */
+    public readonly actions: ActionsForScopes<S>;
 
     constructor({
         clientId,
@@ -122,6 +154,41 @@ export default class MicrosoftProvider<const S extends readonly Scope[]> {
         this.clientSecret = clientSecret;
         this.redirectUri = redirectUri;
         this.scopes = scopes as S;
+
+        const scopeSet = new Set(this.scopes);
+        const actions: any = {};
+
+        if (scopeSet.has("User.Read")) {
+            actions.user = {};
+            actions.user.photo = {};
+            actions.user.photo.readRaw = async ({ tokenStore }: { tokenStore: TokenStore }) => {
+                if (tokenStore.access_token_expires_at < Date.now()) {
+                    tokenStore = await this.refreshTokenStore(tokenStore);
+                }
+
+                const res = await fetch("https://graph.microsoft.com/v1.0/me/photo/$value", {
+                    headers: { Authorization: `Bearer ${tokenStore.access_token}` },
+                });
+
+                if (res.status === 404) {
+                    return { tokenStore, data: null };
+                }
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch user photo: ${res.status} ${await res.text()}`);
+                }
+
+                const bytes = new Uint8Array(await res.arrayBuffer());
+                return {
+                    tokenStore,
+                    data: {
+                        contentType: res.headers.get("content-type"),
+                        bytes,
+                    },
+                };
+            };
+        }
+
+        this.actions = actions as ActionsForScopes<S>;
     }
 
     public getOAuthUrl(state?: string): string {
